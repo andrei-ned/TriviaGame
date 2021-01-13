@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <div id="gameboard">
+        <div>Question?</div>
+        @*<form action="@Url.Action("SubmitAnswer")" method="post">*@
+        <button onclick="submitAnswer(0)">A</button>
+        <button onclick="submitAnswer(1)">B</button>
+        <button onclick="submitAnswer(2)">C</button>
+        <button onclick="submitAnswer(3)">D</button>
+        @*</form>*@
+    </div>
+    <div id="chatbox">
+        <div id="chatboxMessages"></div>
+        <input type="text" id="chatboxInput" placeholder="Send a chat message" />
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var username = '@Model';
+
+        var protocol = location.protocol === "https:" ? "wss:" : "ws:";
+        var wsUri = protocol + "//" + window.location.host + "/gamehub";
+        console.log(window.location.host);
+        console.log(wsUri);
+
+        var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
+
+        connection.start().then(function () {
+            console.log("Connection started.");
+        });
+
+        connection.on("ReceiveChatMessage", function (user, message) {
+            console.log("Received message: " + message + " from " + user);
+
+            var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            var encodedMsg = user + ": " + msg;
+            var msgDiv = document.createElement("div");
+            msgDiv.innerHTML = encodedMsg;
+            document.getElementById("chatboxMessages").appendChild(msgDiv);
+        });
+
+        $('#chatboxInput').keypress(function (e) {
+            if (e.which != 13)
+                return;
+
+            e.preventDefault();
+
+            var message = $('#chatboxInput').val();
+            connection.invoke("SendChatMessage", username, message).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            console.log("Sent message: " + message);
+
+            $('#chatboxInput').val('');
+        });
+
+        function submitAnswer(answerId) {
+            $.ajax({
+                type: 'POST',
+                url: '/Home/SubmitAnswer/' ,
+                data: { 'answer': answerId },
+                success: test
+            });
+        }
+
+        function test(data) {
+            alert(data);
+        }
+    </script>
+}
