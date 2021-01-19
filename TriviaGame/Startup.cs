@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using TriviaGame.Models;
+using TriviaGame.Services;
 
 namespace TriviaGame
 {
@@ -23,7 +26,12 @@ namespace TriviaGame
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<QuestionDatabaseSettings>(Configuration.GetSection(nameof(QuestionDatabaseSettings)));
+            services.AddSingleton<IQuestionDatabaseSettings>(sp => sp.GetRequiredService<IOptions<QuestionDatabaseSettings>>().Value);
+            services.AddSingleton<QuestionService>();
+
             services.AddSignalR();
+
             services.AddControllersWithViews();
         }
 

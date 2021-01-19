@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TriviaGame.Models;
+using MongoDB.Driver;
 
 namespace TriviaGame.Controllers
 {
