@@ -31,6 +31,18 @@ namespace TriviaGame.Controllers
         }
 
         [HttpPost]
+        public IActionResult SubmitQuestion(Question q)
+        {
+            
+            return RedirectToAction("Create", "Questions", new { question = q });
+        }
+
+        public IActionResult SubmitQuestion()
+        {
+            return View();
+        }
+
+        [HttpPost]
         public IActionResult Index(string username)
         {
             return View("Index", username);

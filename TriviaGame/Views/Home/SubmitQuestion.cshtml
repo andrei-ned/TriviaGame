@@ -1,0 +1,33 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<form onsubmit="submitQ()" method="post" id="questionForm">
+    <input type="text" placeholder="Insert question prompt" name="question" />
+    <input type="text" placeholder="Correct Answer" name="correctAnswers[]" />
+    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[]" />
+    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[]" />
+    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[]" />
+    <input type="submit" value="Submit" />
+</form>
+
+@section Scripts {
+    <script>
+        function submitQ(answerId) {
+            var form = $('questionForm');
+
+            $.ajax({
+                type: 'POST',
+                url: '/api/questions/create/',
+                data: form.serialize(),
+                success: test
+            });
+        }
+
+        function test(data) {
+            alert(data);
+        }
+    </script>
+}
