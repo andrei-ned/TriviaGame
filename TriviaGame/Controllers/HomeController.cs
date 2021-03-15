@@ -30,13 +30,6 @@ namespace TriviaGame.Controllers
             return View();
         }
 
-        [HttpPost]
-        public IActionResult SubmitQuestion(Question q)
-        {
-            
-            return RedirectToAction("Create", "Questions", new { question = q });
-        }
-
         public IActionResult SubmitQuestion()
         {
             return View();

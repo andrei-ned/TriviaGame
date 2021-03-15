@@ -9,8 +9,8 @@ using TriviaGame.Services;
 
 namespace TriviaGame.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    //[Route("api/[controller]")]
+    //[ApiController]
     public class QuestionsController : Controller
     {
         private readonly QuestionService questionService;
@@ -24,7 +24,7 @@ namespace TriviaGame.Controllers
         public ActionResult<List<Question>> Get() =>
             questionService.Get();
 
-        [HttpGet("{id:length(24)}", Name = "GetBook")]
+        [HttpGet("{id:length(24)}")]
         public ActionResult<Question> Get(string id)
         {
             var question = questionService.Get(id);
@@ -38,11 +38,21 @@ namespace TriviaGame.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Question> Create(Question question)
+        public IActionResult Test(string asdf)
         {
-            questionService.Create(question);
 
-            return CreatedAtRoute("GetQuestion", new { id = question.Id.ToString() }, question);
+            //return RedirectToAction("Create", "Questions", q);
+            return NoContent();
+        }
+
+        [HttpPost]
+        //[Route("api/questions/create")]
+        //[ActionName("Create")]
+        public ActionResult<Question> Create(Question q)
+        {
+            questionService.Create(q);
+
+            return CreatedAtRoute("GetQuestion", new { id = q.Id.ToString() }, q);
         }
 
         [HttpPut("{id:length(24)}")]

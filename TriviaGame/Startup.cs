@@ -60,6 +60,9 @@ namespace TriviaGame
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                    name: "defaultAPI",
+                    pattern: "api/{controller}/{action}/{id?}");
                 endpoints.MapHub<Hubs.GameHub>("/gamehub");
             });
         }

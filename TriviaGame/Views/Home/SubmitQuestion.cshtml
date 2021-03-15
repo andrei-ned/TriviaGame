@@ -3,28 +3,34 @@
 *@
 @{
 }
-
-<form onsubmit="submitQ()" method="post" id="questionForm">
+<form id="questionForm">
     <input type="text" placeholder="Insert question prompt" name="question" />
-    <input type="text" placeholder="Correct Answer" name="correctAnswers[]" />
-    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[]" />
-    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[]" />
-    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[]" />
+    <input type="text" placeholder="Correct Answer" name="correctAnswers[0]" />
+    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[0]" />
+    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[1]" />
+    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[2]" />
     <input type="submit" value="Submit" />
 </form>
 
 @section Scripts {
     <script>
-        function submitQ(answerId) {
-            var form = $('questionForm');
+        $("#questionForm").submit(function (e) {
+            
+            e.preventDefault()
+            var form = $('#questionForm');
+            var dataObj = {};
+            console.log(form.serialize());
 
             $.ajax({
                 type: 'POST',
-                url: '/api/questions/create/',
-                data: form.serialize(),
-                success: test
+                url: '/questions/create',
+                data: '"id": "5fff42d70cfbb5c861705a62", "question": "A", "correctAnswers": ["B"], "wrongAnswers": ["C", "4", "100", "312", "pi", "e"]',
+                success: test,
+                error: function () {
+                    alert("Failed to submit question");
+                }
             });
-        }
+        });
 
         function test(data) {
             alert(data);
