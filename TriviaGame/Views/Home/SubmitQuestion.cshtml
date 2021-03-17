@@ -3,19 +3,50 @@
 *@
 @{
 }
+
+@model Question
+
+<!--<form id="questionForm">
+    <div>
+        <label asp-for="question"></label>
+        <input asp-for="question"/>
+    </div>
+    <table>
+        <tr>
+            <th>Description</th>
+            <th>Nr of spaces</th>
+        </tr>
+        @for (int index = 0; index < 3; index++)
+        {
+            <tr>
+                <td><input asp-for="@Model.correctAnswers"></td>
+            </tr>
+        }
+        <tr>
+            <td colspan="2>-->
+                <!-- Click = new row of Level fields added -->
+                <!--<button type="button">Add level</button>
+            </td>
+        </tr>
+    </table>
+    <button type="submit">Save</button>
+</form>-->
+
 <form id="questionForm">
-    <input type="text" placeholder="Insert question prompt" name="question" />
-    <input type="text" placeholder="Correct Answer" name="correctAnswers[0]" />
-    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[0]" />
-    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[1]" />
-    <input type="text" placeholder="Wrong Answer" name="wrongAnswers[2]" />
-    <input type="submit" value="Submit" />
+    <div class="form-group">
+        <input type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
+        <input type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
+        <input type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input type="submit" class="btn btn-primary" value="Submit" />
+    </div>
 </form>
 
 @section Scripts {
     <script>
         $("#questionForm").submit(function (e) {
-            
+
             e.preventDefault()
             var form = $('#questionForm');
             var dataObj = {};
@@ -24,7 +55,8 @@
             $.ajax({
                 type: 'POST',
                 url: '/questions/create',
-                data: '"id": "5fff42d70cfbb5c861705a62", "question": "A", "correctAnswers": ["B"], "wrongAnswers": ["C", "4", "100", "312", "pi", "e"]',
+                //data: '"id": "5fff42d70cfbb5c861705a62", "question": "A", "correctAnswers": ["B"], "wrongAnswers": ["C", "4", "100", "312", "pi", "e"]',
+                data: form.serialize(),
                 success: test,
                 error: function () {
                     alert("Failed to submit question");

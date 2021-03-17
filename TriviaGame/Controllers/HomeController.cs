@@ -30,6 +30,7 @@ namespace TriviaGame.Controllers
             return View();
         }
 
+        [Route("Submit")]
         public IActionResult SubmitQuestion()
         {
             return View();

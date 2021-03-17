@@ -38,21 +38,14 @@ namespace TriviaGame.Controllers
         }
 
         [HttpPost]
-        public IActionResult Test(string asdf)
-        {
-
-            //return RedirectToAction("Create", "Questions", q);
-            return NoContent();
-        }
-
-        [HttpPost]
         //[Route("api/questions/create")]
         //[ActionName("Create")]
         public ActionResult<Question> Create(Question q)
         {
             questionService.Create(q);
 
-            return CreatedAtRoute("GetQuestion", new { id = q.Id.ToString() }, q);
+            //return CreatedAtRoute("GetQuestion", new { id = q.Id.ToString() }, q);
+            return NoContent();
         }
 
         [HttpPut("{id:length(24)}")]
