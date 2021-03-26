@@ -45,7 +45,7 @@ namespace TriviaGame.Controllers
             questionService.Create(q);
 
             //return CreatedAtRoute("GetQuestion", new { id = q.Id.ToString() }, q);
-            return NoContent();
+            return View("QuestionReceived");
         }
 
         [HttpPut("{id:length(24)}")]
@@ -76,6 +76,12 @@ namespace TriviaGame.Controllers
             questionService.Remove(question.Id);
 
             return NoContent();
+        }
+
+        [Route("Submit")]
+        public IActionResult SubmitQuestion()
+        {
+            return View();
         }
     }
 }

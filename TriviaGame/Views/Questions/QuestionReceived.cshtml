@@ -1,0 +1,16 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    ViewData["Title"] = "Submit Question";
+}
+
+@model Question
+
+<p>Question submitted</p>
+<form asp-area="" asp-controller="Questions" asp-action="SubmitQuestion">
+    <input type="submit" class="btn btn-primary" value="Submit Another Question" />
+</form>

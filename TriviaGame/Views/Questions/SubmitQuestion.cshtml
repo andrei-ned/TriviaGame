@@ -1,0 +1,49 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    ViewData["Title"] = "Submit Question";
+}
+
+@model Question
+
+<form id="questionForm" action="/questions/create" method="POST">
+    <div class="form-group">
+        <input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
+        <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input type="submit" class="btn btn-primary" value="Submit" />
+    </div>
+</form>
+
+@*@section Scripts {
+        <script>
+            $("#questionForm").submit(function (e) {
+
+                e.preventDefault()
+                var form = $('#questionForm');
+                var dataObj = {};
+                console.log(form.serialize());
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/questions/create',
+                    //data: '"id": "5fff42d70cfbb5c861705a62", "question": "A", "correctAnswers": ["B"], "wrongAnswers": ["C", "4", "100", "312", "pi", "e"]',
+                    data: form.serialize(),
+                    success: test,
+                    error: function () {
+                        alert("Failed to submit question");
+                    }
+                });
+            });
+
+            function test(data) {
+                alert(data);
+            }
+        </script>
+    }*@

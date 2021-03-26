@@ -30,11 +30,11 @@ namespace TriviaGame.Controllers
             return View();
         }
 
-        [Route("Submit")]
-        public IActionResult SubmitQuestion()
-        {
-            return View();
-        }
+        //[Route("Submit")]
+        //public IActionResult SubmitQuestion()
+        //{
+        //    return View();
+        //}
 
         [HttpPost]
         public IActionResult Index(string username)
