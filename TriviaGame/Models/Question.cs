@@ -15,5 +15,7 @@ namespace TriviaGame.Models
         public string question { get; set; }
         public string[] correctAnswers { get; set; }
         public string[] wrongAnswers { get; set; }
+        public string note { get; set; }
+        public bool isValidated { get; set; }
     }
 }

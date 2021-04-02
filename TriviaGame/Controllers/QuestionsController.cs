@@ -42,6 +42,7 @@ namespace TriviaGame.Controllers
         //[ActionName("Create")]
         public ActionResult<Question> Create(Question q)
         {
+            q.isValidated = false;
             questionService.Create(q);
 
             //return CreatedAtRoute("GetQuestion", new { id = q.Id.ToString() }, q);
@@ -82,6 +83,12 @@ namespace TriviaGame.Controllers
         public IActionResult SubmitQuestion()
         {
             return View();
+        }
+
+        [Route("Moderate")]
+        public ActionResult<Question> ModerateQuestions()
+        {
+            return View(questionService.GetInvalid(10));
         }
     }
 }

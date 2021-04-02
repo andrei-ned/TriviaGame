@@ -20,7 +20,13 @@ namespace TriviaGame.Services
         }
 
         public List<Question> Get() =>
-            questions.Find(book => true).ToList();
+            questions.Find(q => true).ToList();
+
+        public List<Question> GetValid() =>
+            questions.Find(q => q.isValidated).ToList();
+
+        public List<Question> GetInvalid(int? limit = null) =>
+            questions.Find(q => !q.isValidated).Limit(limit).ToList();
 
         public Question Get(string id) =>
             questions.Find(question => question.Id == id).FirstOrDefault();

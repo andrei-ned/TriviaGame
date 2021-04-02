@@ -10,17 +10,23 @@
 
 @model Question
 
-<form id="questionForm" action="/questions/create" method="POST">
+@using (Html.BeginForm("Create", "Questions"))
+{
     <div class="form-group">
         <input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
         <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
         <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
         <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
         <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <div>
+            <label>
+                Add a source or anything else for question moderation.
+                <textarea type="text" class="form-control" asp-for="@Model.note"></textarea>
+            </label>
+        </div>
         <input type="submit" class="btn btn-primary" value="Submit" />
     </div>
-</form>
-
+}
 @*@section Scripts {
         <script>
             $("#questionForm").submit(function (e) {

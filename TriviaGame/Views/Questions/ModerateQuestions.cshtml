@@ -1,0 +1,98 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    ViewData["Title"] = "Moderate";
+}
+
+@Model List<Question>
+
+
+@foreach (Question q in Model)
+{
+    @*<div class="form-group">
+            <input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
+            <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
+            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+            <div>
+                <label>
+                    Add a source or anything else for question moderation.
+                    <textarea type="text" class="form-control" asp-for="@Model.note"></textarea>
+                </label>
+            </div>
+            <input type="submit" class="btn btn-primary" value="Submit" />
+        </div>*@
+    <form class="question-form">
+        <div class="form-group">
+            @*<input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
+        <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <div>
+            <label>
+                Add a source or anything else for question moderation.
+                <textarea type="text" class="form-control" asp-for="@Model.note"></textarea>
+            </label>
+        </div>*@
+
+
+            @*<input required type="text" class="form-control" placeholder="Correct Answer" id="correctAnswers" name="correctAnswers" value="" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" id="wrongAnswers" name="wrongAnswers" value="" />*@
+            <input type="hidden" value="@q.Id" />
+            <div>
+                <label>
+                    Question:
+                    <textarea type="text" class="form-control" name="question">@q.question</textarea>
+                </label>
+            </div>
+            @foreach (string a in q.correctAnswers)
+            {
+                <input required type="text" class="form-control" name="correctAnswers" value="@a" />
+            }
+            @foreach (string a in q.wrongAnswers)
+            {
+                <input required type="text" class="form-control" name="wrongAnswers" value="@a" />
+            }
+
+            <div>
+                <label>
+                    Source/note:
+                    <textarea type="text" class="form-control" name="note">@q.note</textarea>
+                </label>
+            </div>
+
+            <input type="submit" class="btn btn-primary" value="Approve" />
+            <input type="submit" class="btn btn-danger" value="Delete" />
+        </div>
+    </form>
+    @*@using (Html.BeginForm("Update", "Questions"))
+    {
+
+    }
+    await Html.RenderPartialAsync("PartialModerateQuestionForm", q);*@
+}
+
+@section Scripts {
+    <script>
+        // WIP
+        $(".question-form").submit(function (e) {
+            e.preventDefault();
+
+            var form = $(this);
+
+            $.ajax({
+                type: 'PUT',
+                url: '/questions/update',
+                data: form.serialize(),
+                succes: console.log("submission success"),
+                error: console.log("submission error")
+            });
+        })
+    </script>
+}
