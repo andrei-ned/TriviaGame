@@ -80,3 +80,11 @@ form {
 input {
     margin-bottom: 15px;
 }
+
+textarea {
+    min-width: 100%;
+}
+
+.form-control {
+    width: 100%;
+}

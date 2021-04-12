@@ -13,16 +13,24 @@
 @using (Html.BeginForm("Create", "Questions"))
 {
     <div class="form-group">
-        <input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
-        <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        <div>
-            <label>
-                Add a source or anything else for question moderation.
-                <textarea type="text" class="form-control" asp-for="@Model.note"></textarea>
-            </label>
+        
+        <div class="form-group">
+            <label asp-for="@Model.question">Question prompt</label>
+            <input required type="text" class="form-control" placeholder="Question prompt" asp-for="@Model.question" />
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.correctAnswers">Correct Answer</label>
+            <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.wrongAnswers">Wrong answers</label>
+            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.note">Add a source or anything else for question moderation.</label>
+            <textarea class="form-control" type="text" asp-for="@Model.note"></textarea>
         </div>
         <input type="submit" class="btn btn-primary" value="Submit" />
     </div>

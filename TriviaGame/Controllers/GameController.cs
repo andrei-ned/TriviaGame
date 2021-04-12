@@ -8,9 +8,10 @@ namespace TriviaGame.Controllers
 {
     public class GameController : Controller
     {
-        public IActionResult Index()
+        [HttpPost]
+        public IActionResult Index(string username)
         {
-            return View();
+            return View("Play", username);
         }
 
         [HttpPost]

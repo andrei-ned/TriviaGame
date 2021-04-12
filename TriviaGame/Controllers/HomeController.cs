@@ -22,7 +22,7 @@ namespace TriviaGame.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View("InputUsername");
+            return View("Index");
         }
 
         public IActionResult Privacy()
@@ -36,11 +36,11 @@ namespace TriviaGame.Controllers
         //    return View();
         //}
 
-        [HttpPost]
-        public IActionResult Index(string username)
-        {
-            return View("Index", username);
-        }
+        //[HttpPost]
+        //public IActionResult Index(string username)
+        //{
+        //    return View("Index", username);
+        //}
 
         [HttpPost]
         public string SubmitAnswer(int answer)
