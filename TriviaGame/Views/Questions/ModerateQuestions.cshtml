@@ -8,91 +8,71 @@
     ViewData["Title"] = "Moderate";
 }
 
-@Model List<Question>
+@model List<Question>
 
-
+<h2>@Model.Count questions to moderate</h2>
 @foreach (Question q in Model)
 {
-    @*<div class="form-group">
-            <input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
-            <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
-            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-            <div>
-                <label>
-                    Add a source or anything else for question moderation.
-                    <textarea type="text" class="form-control" asp-for="@Model.note"></textarea>
-                </label>
+    <div class="form-group">
+        <form>
+            <input type="hidden" name="Id" value="@q.Id" />
+            <div class="form-group">
+                <label name="question">Question prompt</label>
+                <textarea rows="2" required type="text" class="form-control" placeholder="Question prompt" name="question">@q.question</textarea>
             </div>
-            <input type="submit" class="btn btn-primary" value="Submit" />
-        </div>*@
-    <form class="question-form">
-        <div class="form-group">
-            @*<input required type="text" class="form-control" placeholder="Insert question prompt" asp-for="@Model.question" />
-        <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        <div>
-            <label>
-                Add a source or anything else for question moderation.
-                <textarea type="text" class="form-control" asp-for="@Model.note"></textarea>
-            </label>
-        </div>*@
+            <div class="form-group">
+                <label for="correctAnswers">Correct Answer</label>
+                @foreach (string a in q.correctAnswers)
+                {
 
 
-            @*<input required type="text" class="form-control" placeholder="Correct Answer" id="correctAnswers" name="correctAnswers" value="" />
-        <input required type="text" class="form-control" placeholder="Wrong Answer" id="wrongAnswers" name="wrongAnswers" value="" />*@
-            <input type="hidden" value="@q.Id" />
-            <div>
-                <label>
-                    Question:
-                    <textarea type="text" class="form-control" name="question">@q.question</textarea>
-                </label>
+                    <input required type="text" class="form-control" name="correctAnswers" value="@a" />
+
+                }
             </div>
-            @foreach (string a in q.correctAnswers)
-            {
-                <input required type="text" class="form-control" name="correctAnswers" value="@a" />
-            }
-            @foreach (string a in q.wrongAnswers)
-            {
-                <input required type="text" class="form-control" name="wrongAnswers" value="@a" />
-            }
+            <div class="form-group">
+                <label for="wrongAnswers">Wrong Answers</label>
+                @foreach (string a in q.wrongAnswers)
+                {
+                    <input required type="text" class="form-control" name="wrongAnswers" value="@a" />
+                }
 
-            <div>
-                <label>
-                    Source/note:
-                    <textarea type="text" class="form-control" name="note">@q.note</textarea>
-                </label>
+                <button type="button" class="approveBtn btn btn-primary">Approve</button>
+                <button type="button" class="deleteBtn btn btn-danger">Delete</button>
             </div>
-
-            <input type="submit" class="btn btn-primary" value="Approve" />
-            <input type="submit" class="btn btn-danger" value="Delete" />
-        </div>
-    </form>
-    @*@using (Html.BeginForm("Update", "Questions"))
-    {
-
-    }
-    await Html.RenderPartialAsync("PartialModerateQuestionForm", q);*@
+        </form>
+    </div>
 }
 
 @section Scripts {
     <script>
-        // WIP
-        $(".question-form").submit(function (e) {
-            e.preventDefault();
-
-            var form = $(this);
+        $('.approveBtn').on('click', function (e) {
+            var form = $(this).parent().parent();
 
             $.ajax({
                 type: 'PUT',
-                url: '/questions/update',
+                url: '/questions/approve',
                 data: form.serialize(),
-                succes: console.log("submission success"),
-                error: console.log("submission error")
-            });
+                complete: function (result) {
+                    console.log("question succesfully approved");
+                    form.parent().html("Question Approved");
+                }
+            })
+        })
+
+        $('.deleteBtn').click(function (e) {
+            var form = $(this).parent().parent();
+            var qId = form.children('input[name=Id]').val();
+            console.log(qId);
+
+            $.ajax({
+                type: 'DELETE',
+                url: '/questions/delete?id=' + qId,
+                complete: function (result) {
+                    console.log("question succesfully deleted");
+                    form.parent().html("Question Deleted");
+                }
+            })
         })
     </script>
 }

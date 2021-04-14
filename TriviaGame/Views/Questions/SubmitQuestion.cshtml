@@ -12,52 +12,21 @@
 
 @using (Html.BeginForm("Create", "Questions"))
 {
+<div class="form-group">
     <div class="form-group">
-        
-        <div class="form-group">
-            <label asp-for="@Model.question">Question prompt</label>
-            <input required type="text" class="form-control" placeholder="Question prompt" asp-for="@Model.question" />
-        </div>
-        <div class="form-group">
-            <label asp-for="@Model.correctAnswers">Correct Answer</label>
-            <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
-        </div>
-        <div class="form-group">
-            <label asp-for="@Model.wrongAnswers">Wrong answers</label>
-            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-            <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
-        </div>
-        <div class="form-group">
-            <label asp-for="@Model.note">Add a source or anything else for question moderation.</label>
-            <textarea class="form-control" type="text" asp-for="@Model.note"></textarea>
-        </div>
-        <input type="submit" class="btn btn-primary" value="Submit" />
+        <label asp-for="@Model.question">Question prompt</label>
+        <textarea rows="2" required type="text" class="form-control" placeholder="Question prompt" asp-for="@Model.question"></textarea>
     </div>
+    <div class="form-group">
+        <label asp-for="@Model.correctAnswers">Correct Answer</label>
+        <input required type="text" class="form-control" placeholder="Correct Answer" asp-for="@Model.correctAnswers" />
+    </div>
+    <div class="form-group">
+        <label asp-for="@Model.wrongAnswers">Wrong answers</label>
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+        <input required type="text" class="form-control" placeholder="Wrong Answer" asp-for="@Model.wrongAnswers" />
+    </div>
+    <input type="submit" class="btn btn-primary" value="Submit" />
+</div>
 }
-@*@section Scripts {
-        <script>
-            $("#questionForm").submit(function (e) {
-
-                e.preventDefault()
-                var form = $('#questionForm');
-                var dataObj = {};
-                console.log(form.serialize());
-
-                $.ajax({
-                    type: 'POST',
-                    url: '/questions/create',
-                    //data: '"id": "5fff42d70cfbb5c861705a62", "question": "A", "correctAnswers": ["B"], "wrongAnswers": ["C", "4", "100", "312", "pi", "e"]',
-                    data: form.serialize(),
-                    success: test,
-                    error: function () {
-                        alert("Failed to submit question");
-                    }
-                });
-            });
-
-            function test(data) {
-                alert(data);
-            }
-        </script>
-    }*@

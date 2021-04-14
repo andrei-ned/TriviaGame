@@ -38,8 +38,7 @@ namespace TriviaGame.Controllers
         }
 
         [HttpPost]
-        //[Route("api/questions/create")]
-        //[ActionName("Create")]
+        [Route("SubmitSucces")]
         public ActionResult<Question> Create(Question q)
         {
             q.isValidated = false;
@@ -50,21 +49,24 @@ namespace TriviaGame.Controllers
         }
 
         [HttpPut("{id:length(24)}")]
-        public IActionResult Update(string id, Question questionIn)
+        [Route("Questions/Approve")]
+        public IActionResult Approve(Question questionIn)
         {
-            var question = questionService.Get(id);
+            var question = questionService.Get(questionIn.Id);
 
             if (question == null)
             {
                 return NotFound();
             }
 
-            questionService.Update(id, questionIn);
+            questionIn.isValidated = true;
+            questionService.Update(questionIn.Id, questionIn);
 
             return NoContent();
         }
 
         [HttpDelete("{id:length(24)}")]
+        [Route("Questions/Delete")]
         public IActionResult Delete(string id)
         {
             var question = questionService.Get(id);
@@ -88,7 +90,7 @@ namespace TriviaGame.Controllers
         [Route("Moderate")]
         public ActionResult<Question> ModerateQuestions()
         {
-            return View(questionService.GetInvalid(10));
+            return View(questionService.GetInvalid());
         }
     }
 }
