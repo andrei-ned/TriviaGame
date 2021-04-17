@@ -3,8 +3,6 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
     <div id="gameboard">
         <div>Question?</div>
         @*<form action="@Url.Action("SubmitAnswer")" method="post">*@
@@ -26,13 +24,12 @@
 
         var protocol = location.protocol === "https:" ? "wss:" : "ws:";
         var wsUri = protocol + "//" + window.location.host + "/gamehub";
-        console.log(window.location.host);
-        console.log(wsUri);
 
         var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
 
         connection.start().then(function () {
             console.log("Connection started.");
+            connection.invoke("InitUser", username);
         });
 
         connection.on("ReceiveChatMessage", function (user, message) {
@@ -44,6 +41,19 @@
             msgDiv.innerHTML = encodedMsg;
             document.getElementById("chatboxMessages").appendChild(msgDiv);
         });
+
+        connection.on("ReceivePlayerScore", function (user, score) {
+            console.log("Received " + user + "'s score: " + score);
+        });
+
+        connection.on("ReceiveNewPlayer", function (user) {
+            console.log("Received new player: " + user);
+        });
+
+        connection.on("ReceiveQuestion", function (question) {
+            console.log("Received question: ");
+            console.log(question);
+        })
 
         $('#chatboxInput').keypress(function (e) {
             if (e.which != 13)
@@ -62,16 +72,11 @@
         });
 
         function submitAnswer(answerId) {
-            $.ajax({
-                type: 'POST',
-                url: '/Home/SubmitAnswer/' ,
-                data: { 'answer': answerId },
-                success: test
+            connection.invoke("SendQuestionAnswer", answerId).catch(function (err) {
+                return console.error(err.toString());
             });
-        }
 
-        function test(data) {
-            alert(data);
+            console.log("Submitted answer " + answerId);
         }
     </script>
 }

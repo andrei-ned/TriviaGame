@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TriviaGame.Services;
 
 namespace TriviaGame.Controllers
 {
@@ -12,13 +13,6 @@ namespace TriviaGame.Controllers
         public IActionResult Index(string username)
         {
             return View("Play", username);
-        }
-
-        [HttpPost]
-        public string SubmitAnswer(int answer)
-        {
-            // TODO
-            return "Received answer " + answer;
         }
     }
 }

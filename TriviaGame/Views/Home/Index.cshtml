@@ -3,10 +3,11 @@
     ViewData["Title"] = "Home";
 }
 
-Coming soon.
-
-@*<form action="@Url.Action("Index", "Game")" method="post">
-    <input type="text" placeholder="Insert user name" name="userName" />
-    <input type="submit" value="Enter" />
-</form>*@
+<form action="@Url.Action("Index", "Game")" method="post">
+    <div class="row">
+        <input class="col-4" type="text" placeholder="Insert nickname" name="userName" required/>
+        <input class="ml-2 col-1 btn btn-primary" type="submit" value="Play" />
+        <div class="col-6"></div>
+    </div>
+</form>
 

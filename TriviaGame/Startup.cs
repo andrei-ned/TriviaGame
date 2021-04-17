@@ -30,9 +30,15 @@ namespace TriviaGame
             services.AddSingleton<IQuestionDatabaseSettings>(sp => sp.GetRequiredService<IOptions<QuestionDatabaseSettings>>().Value);
             services.AddSingleton<QuestionService>();
 
+            services.Configure<GameSettings>(Configuration.GetSection(nameof(GameSettings)));
+            services.AddSingleton<IGameSettings>(sp => sp.GetRequiredService<IOptions<GameSettings>>().Value);
+            services.AddSingleton<GameService>();
+
             services.AddSignalR();
 
             services.AddControllersWithViews();
+
+            //services.AddSingleton()
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

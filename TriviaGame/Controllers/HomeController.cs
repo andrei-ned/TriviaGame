@@ -25,30 +25,6 @@ namespace TriviaGame.Controllers
             return View("Index");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        //[Route("Submit")]
-        //public IActionResult SubmitQuestion()
-        //{
-        //    return View();
-        //}
-
-        //[HttpPost]
-        //public IActionResult Index(string username)
-        //{
-        //    return View("Index", username);
-        //}
-
-        [HttpPost]
-        public string SubmitAnswer(int answer)
-        {
-            // TODO
-            return "Received answer " + answer;
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

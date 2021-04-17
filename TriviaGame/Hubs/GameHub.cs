@@ -3,24 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using TriviaGame.Services;
 
 namespace TriviaGame.Hubs
 {
     public class GameHub : Hub
     {
+        private readonly GameService gameService;
+
+        public GameHub(GameService gameService)
+        {
+            this.gameService = gameService;
+        }
+
         public async Task SendChatMessage(string user, string message)
         {
             await Clients.All.SendAsync("ReceiveChatMessage", user, message);
         }
 
-        public override Task OnConnectedAsync()
+        public void SendQuestionAnswer(int answerId)
         {
-            return base.OnConnectedAsync();
+            gameService.PlayerAnswer(Context.ConnectionId, answerId);
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        public void InitUser(string user)
         {
-            return base.OnDisconnectedAsync(exception);
+            gameService.AddPlayer(Context.ConnectionId, user);
+        }
+
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            gameService.RemovePlayer(Context.ConnectionId);
+            await base.OnDisconnectedAsync(exception);
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            await base.OnConnectedAsync();
         }
     }
 }

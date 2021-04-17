@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Driver.Linq;
 using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Driver;
@@ -22,11 +23,14 @@ namespace TriviaGame.Services
         public List<Question> Get() =>
             questions.Find(q => true).ToList();
 
-        public List<Question> GetValid() =>
-            questions.Find(q => q.isValidated).ToList();
+        public List<Question> GetValid(int? limit = null) =>
+            questions.Find(q => q.isValidated).Limit(limit).ToList();
 
         public List<Question> GetInvalid(int? limit = null) =>
             questions.Find(q => !q.isValidated).Limit(limit).ToList();
+
+        public List<Question> GetRandom(int count) =>
+            questions.AsQueryable().ToList().OrderBy(x => Guid.NewGuid()).Take(count).ToList();
 
         public Question Get(string id) =>
             questions.Find(question => question.Id == id).FirstOrDefault();
