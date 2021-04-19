@@ -80,7 +80,7 @@ namespace TriviaGame.Services
                 gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name);
             }
             playerScores.TryAdd(playerConnectionId, new PlayerData(name));
-            gameHub.Clients.All.SendAsync("ReceiveNewPlayer", name);
+            gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name);
         }
 
         public void RemovePlayer(string playerConnectionId)

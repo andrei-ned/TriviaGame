@@ -24,10 +24,7 @@
                 <label for="correctAnswers">Correct Answer</label>
                 @foreach (string a in q.correctAnswers)
                 {
-
-
                     <input required type="text" class="form-control" name="correctAnswers" value="@a" />
-
                 }
             </div>
             <div class="form-group">
@@ -36,7 +33,6 @@
                 {
                     <input required type="text" class="form-control" name="wrongAnswers" value="@a" />
                 }
-
                 <button type="button" class="approveBtn btn btn-primary">Approve</button>
                 <button type="button" class="deleteBtn btn btn-danger">Delete</button>
             </div>
