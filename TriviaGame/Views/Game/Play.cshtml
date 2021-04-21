@@ -3,30 +3,20 @@
 }
 
 <div class="row gameContainer">
-    <div class="col-3 h-100" id="scoreboard">
-        <div>
-            <span>Pleb</span><span class="float-right score">20</span>
+    <div class="col-3 h-100" id="scoreboard"></div>
+    <div class="col-6 text-center h-100 overflow-auto text-break" id="gameboard">
+        <div class="progress">
+            <div class="progress-bar active" role="progressbar" style="width: 100%" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
-        <div>
-            <span>Name</span><span class="float-right score">2500</span>
-        </div>
-    </div>
-    <div class="col-6 text-center h-100" id="gameboard">
-        <div>Question?</div>
-        <button class="btn btn-primary" onclick="submitAnswer(0)">A</button>
-        <button class="btn btn-primary" onclick="submitAnswer(1)">B</button>
-        <button class="btn btn-primary" onclick="submitAnswer(2)">C</button>
-        <button class="btn btn-primary" onclick="submitAnswer(3)">D</button>
+        <div id="question">Question?</div>
+        <button id="answer0" class="col btn btn-outline-primary" onclick="submitAnswer(0)">A</button>
+        <button id="answer1" class="col btn btn-outline-primary" onclick="submitAnswer(1)">B</button>
+        <button id="answer2" class="col btn btn-outline-primary" onclick="submitAnswer(2)">C</button>
+        <button id="answer3" class="col btn btn-outline-primary" onclick="submitAnswer(3)">D</button>
+        <div id="scoreUpdates"></div>
     </div>
     <div class="col-3 h-100" id="chatbox">
-        <div class="overflow-auto" id="chatboxMessages">
-            <p class="text-break m-0"><strong>Pleb: </strong> Hello</p>
-            <p class="text-break m-0"><strong>Pleb: </strong> REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE</p>
-            <p class="text-break m-0"><strong>Pleb: </strong> Hello</p>
-            <p class="text-break m-0"><strong>Pleb: </strong> REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE</p>
-            <p class="text-break m-0"><strong>Pleb: </strong> Hello</p>
-            <p class="text-break m-0"><strong>Pleb: </strong> REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE</p>
-        </div>
+        <div class="overflow-auto" id="chatboxMessages"></div>
         <input class="" type="text" id="chatboxInput" placeholder="Send a chat message" />
     </div>
 </div>
@@ -35,115 +25,6 @@
 @section Scripts {
     <script>
         var username = '@Model';
-
-        var protocol = location.protocol === "https:" ? "wss:" : "ws:";
-        var wsUri = protocol + "//" + window.location.host + "/gamehub";
-
-        var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
-
-        addPlayer(username);
-
-        connection.start().then(function () {
-            console.log("Connection started.");
-            connection.invoke("InitUser", username);
-        });
-
-        connection.on("ReceiveChatMessage", function (user, message) {
-            console.log("Received message: " + message + " from " + user);
-
-            var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            var encodedMsg = "<strong>" + user + ":</strong> " + msg;
-            var msgElement = document.createElement("p");
-            msgElement.innerHTML = encodedMsg;
-            msgElement.setAttribute("class", "text-break m-0");
-            var chatboxMessages = document.getElementById("chatboxMessages");
-            var shouldScroll = false;
-            if (chatboxMessages.scrollHeight - chatboxMessages.offsetHeight < chatboxMessages.scrollTop + 5) {
-                shouldScroll = true;
-            }
-            console.log(chatboxMessages.scrollHeight - chatboxMessages.offsetHeight);
-            chatboxMessages.appendChild(msgElement);
-            if (shouldScroll) {
-                msgElement.scrollIntoView(false);
-            }
-        });
-
-        connection.on("ReceivePlayerScore", function (user, score) {
-            console.log("Received " + user + "'s score: " + score);
-
-            sortScoreboard();
-        });
-
-        connection.on("ReceiveNewPlayer", function (user) {
-            console.log("Received new player: " + user);
-
-            addPlayer(user);
-        });
-
-        function addPlayer(user) {
-            var playerElement = document.createElement("div");
-            var playerName = document.createElement("span");
-            playerName.innerHTML = user;
-            var playerScore = document.createElement("span");
-            playerScore.innerHTML = "0";
-            playerScore.setAttribute("class", "float-right score");
-
-            playerElement.appendChild(playerName);
-            playerElement.appendChild(playerScore);
-
-            $('#scoreboard').append(playerElement);
-
-            sortScoreboard();
-        }
-
-        connection.on("ReceivePlayerDisconnect", function (user) {
-            console.log("Player disconnect: " + user);
-
-            sortScoreboard();
-        });
-
-        connection.on("ReceiveQuestion", function (question) {
-            console.log("Received question: ");
-            console.log(question);
-        })
-
-        $('#chatboxInput').keypress(function (e) {
-            if (e.which != 13)
-                return;
-
-            e.preventDefault();
-
-            var message = $('#chatboxInput').val();
-            connection.invoke("SendChatMessage", username, message).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-            console.log("Sent message: " + message);
-
-            $('#chatboxInput').val('');
-        });
-
-        function submitAnswer(answerId) {
-            connection.invoke("SendQuestionAnswer", answerId).catch(function (err) {
-                return console.error(err.toString());
-            });
-
-            console.log("Submitted answer " + answerId);
-        }
-
-        function idExists(id) {
-            return ($(id).length) > 0;
-        }
-
-        function sortScoreboard() {
-            var children = $('#scoreboard div');
-            children.sort(function (a, b) {
-                console.log("Sorting " + parseInt($(a).children('.score').html()) + " and " + parseInt($(b).children('.score').html()));
-                return parseInt($(a).children('.score').html()) >
-                    parseInt($(b).children('.score').html()) ? -1 : 1;
-            });
-            console.log(children);
-            $('#scoreboard').append(children);
-        }
     </script>
+    <script src="~/js/game.js" asp-append-version="true"></script>
 }

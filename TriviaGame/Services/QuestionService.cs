@@ -30,7 +30,7 @@ namespace TriviaGame.Services
             questions.Find(q => !q.isValidated).Limit(limit).ToList();
 
         public List<Question> GetRandom(int count) =>
-            questions.AsQueryable().ToList().OrderBy(x => Guid.NewGuid()).Take(count).ToList();
+            questions.Find(q => q.isValidated).ToList().OrderBy(x => Guid.NewGuid()).Take(count).ToList();
 
         public Question Get(string id) =>
             questions.Find(question => question.Id == id).FirstOrDefault();

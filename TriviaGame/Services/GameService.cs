@@ -8,6 +8,7 @@ using TriviaGame.Hubs;
 using TriviaGame.Models;
 using System.Timers;
 using System.Diagnostics;
+using System.Text.Json;
 
 namespace TriviaGame.Services
 {
@@ -17,12 +18,14 @@ namespace TriviaGame.Services
         private readonly QuestionService questionService;
         private readonly IGameSettings gameSettings;
 
-        private ConcurrentDictionary<string, PlayerData> playerScores;
+        private ConcurrentDictionary<string, PlayerData> players;
         private Timer questionTimer;
+        private Timer questionResultsTimer;
         private Stopwatch questionStopwatch;
 
         private List<Question> questions;
         private int currentQuestionIndex;
+        private int correctAnswer;
 
         public GameService(IHubContext<GameHub> gameHub, QuestionService questionService, IGameSettings gameSettings)
         {
@@ -30,74 +33,115 @@ namespace TriviaGame.Services
             this.questionService = questionService;
             this.gameSettings = gameSettings;
 
-            playerScores = new ConcurrentDictionary<string, PlayerData>();
+            players = new ConcurrentDictionary<string, PlayerData>();
+
             questionTimer = new Timer(gameSettings.SecondsPerQuestion * 1000);
+            questionTimer.AutoReset = false;
+            questionTimer.Elapsed += OnQuestonTimerElapsed;
+
+            questionResultsTimer = new Timer(gameSettings.SecondsBetweenQuestions * 1000);
+            questionResultsTimer.Elapsed += OnResultsTimerElapsed;
+            questionResultsTimer.AutoReset = false;
+
             questionStopwatch = new Stopwatch();
-
-            questionTimer.Elapsed += (sender, e) =>
-            {
-                if (currentQuestionIndex >= gameSettings.QuestionsPerGame)
-                {
-                    // Setup new game
-                    InitGame();
-                    return;
-                }
-
-                questionStopwatch.Restart();
-                //gameHub.Clients.All.SendAsync("ReceiveChatMessage", "Service", "Hello");
-
-                // Setup and send question
-                GameQuestion gameQuestion = new GameQuestion(questions[currentQuestionIndex]);
-                currentQuestionIndex++;
-
-                gameHub.Clients.All.SendAsync("ReceiveQuestion", gameQuestion);
-            };
-            questionTimer.Start();
 
             InitGame();
         }
 
         private void InitGame()
         {
-            // Clean up old questions
-            //questions.Clear();
-            currentQuestionIndex = 0;
-
             // Generate new questions
+            currentQuestionIndex = 0;
             questions = questionService.GetRandom(gameSettings.QuestionsPerGame);
 
-            // Reset scores
-            foreach (var player in playerScores.Values)
+            // Reset previous scores
+            foreach (var player in players.Values)
             {
                 player.score = 0;
+                player.answerId = -1;
+                player.scoreThisQuestion = 0;
             }
+
+            // Start next game
+            SendNextQuestion();
+            questionTimer.Start();
         }
 
         public void AddPlayer(string playerConnectionId, string name)
         {
-            foreach (var player in playerScores.Values)
+            foreach (var player in players.Values)
             {
-                gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name);
+                gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name, player.score);
             }
-            playerScores.TryAdd(playerConnectionId, new PlayerData(name));
-            gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name);
+            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion, gameSettings.SecondsBetweenQuestions);
+            players.TryAdd(playerConnectionId, new PlayerData(name));
+            gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name, 0);
         }
 
         public void RemovePlayer(string playerConnectionId)
         {
-            playerScores.TryRemove(playerConnectionId, out _);
+            gameHub.Clients.All.SendAsync("ReceivePlayerDisconnect", players[playerConnectionId].name);
+            players.TryRemove(playerConnectionId, out _);
         }
 
         public void PlayerAnswer(string playerConnectionId, int answerId)
         {
-            if (true) // correct answer
-            {
-                if (playerScores.TryGetValue(playerConnectionId, out PlayerData playerData))
-                {
-                    playerData.score++;
+            gameHub.Clients.All.SendAsync("ReceivePlayerAnswered", players[playerConnectionId].name);
 
-                    gameHub.Clients.All.SendAsync("ReceivePlayerScore", playerData.name, playerData.score);
-                }
+            PlayerData player;
+            if (!players.TryGetValue(playerConnectionId, out player))
+                return;
+
+            player.answerId = answerId;
+            player.scoreThisQuestion = answerId == correctAnswer ? CalculateAnswerScore() : 0;
+            player.score += player.scoreThisQuestion;
+        }
+
+        private int CalculateAnswerScore()
+        {
+            double t = Math.Clamp(questionStopwatch.Elapsed.TotalMilliseconds / (gameSettings.SecondsPerQuestion * 1000), 0.0f, 1.0f);
+            double score = (1 - t * gameSettings.PointsResponseTimeMultiplier) * gameSettings.PointsPerQuestion;
+            return Convert.ToInt32(score);
+        }
+
+        private void SendNextQuestion()
+        {
+            questionStopwatch.Restart();
+            GameQuestion gameQuestion = new GameQuestion(questions[currentQuestionIndex]);
+            correctAnswer = gameQuestion.answers.FindIndex(x => x == questions[currentQuestionIndex].correctAnswers[0]);
+            currentQuestionIndex++;
+
+            gameHub.Clients.All.SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex);
+        }
+
+        private void ResetPlayerAnswers()
+        {
+            foreach(var player in players.Values)
+            {
+                player.answerId = -1;
+                player.scoreThisQuestion = 0;
+            }
+        }
+
+        private void OnQuestonTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            // Send: everyone's answers, everyone's gained points, correct answer
+            gameHub.Clients.All.SendAsync("ReceiveQuestionResults", players.Values.ToArray(), correctAnswer);
+            questionResultsTimer.Start();
+        }
+
+        private void OnResultsTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (currentQuestionIndex < questions.Count)
+            {
+                ResetPlayerAnswers();
+                SendNextQuestion();
+                questionTimer.Start();
+            }
+            else
+            {
+                gameHub.Clients.All.SendAsync("ReceiveChatMessage", "Game", "Match is over");
+                // TODO: restart game after end screen
             }
         }
 
@@ -107,10 +151,14 @@ namespace TriviaGame.Services
             {
                 this.name = name;
                 score = 0;
+                answerId = -1;
+                scoreThisQuestion = 0;
             }
 
-            public string name;
-            public int score;
+            public string name { get; set; }
+            public int score { get; set; }
+            public int answerId { get; set; }
+            public int scoreThisQuestion { get; set; }
         }
 
         class GameQuestion
@@ -121,7 +169,7 @@ namespace TriviaGame.Services
                 answers = new List<string>();
                 answers.AddRange(q.correctAnswers);
                 answers.AddRange(q.wrongAnswers);
-                answers.OrderBy(x => Guid.NewGuid()); // shuffle
+                answers.Shuffle();
             }
 
             public string question { get; set; }

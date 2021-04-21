@@ -5,9 +5,12 @@
 
 <form action="@Url.Action("Index", "Game")" method="post">
     <div class="row">
-        <input class="col-4" type="text" placeholder="Insert nickname" name="userName" required/>
+        <input class="col-4" type="text" placeholder="Insert nickname" name="userName" required />
         <input class="ml-2 col-1 btn btn-primary" type="submit" value="Play" />
         <div class="col-6"></div>
+    </div>
+    <div class="progress">
+        <div class="progress-bar active" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
 </form>
 

@@ -101,20 +101,26 @@ textarea {
 }
 
 #scoreboard {
-    background-color: lightgray;
-    padding-right: 5px;
-    padding-left: 5px;
     font-size: 1.5em;
 }
 
 #gameboard {
-    background-color: lightslategray;
+    font-size: 2em;
 }
 
-#chatbox {
-    background-color: lightgray;
+#gameboard .btn {
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#chatbox, #scoreboard {
+    background-color: #e9ecef;
     padding-right: 5px;
     padding-left: 5px;
+    border-color: #5aaaff;
+    border-width: 5px;
+    border-style: solid;
+    border-radius: 20px;
 }
 
 #chatboxInput {
@@ -130,4 +136,15 @@ textarea {
 
 #chatboxMessages p {
     margin: 0;
+}
+
+#scoreUpdates {
+    position: fixed;
+    right: 0;
+    left: 0;
+}
+
+#scoreUpdates p {
+    margin-bottom: 0;
+    font-size: 0.75em;
 }
