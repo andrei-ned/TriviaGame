@@ -3,6 +3,9 @@ var wsUri = protocol + "//" + window.location.host + "/gamehub";
 var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
 
 var secondsPerQuestion;
+var secondsBetweenQuestions;
+var currentQuestionIndex;
+var totalQuestions;
 
 var myAnswer = -1;
 
@@ -13,10 +16,11 @@ connection.start().then(function () {
     connection.invoke("InitUser", username);
 });
 
-connection.on("ReceiveGameData", function (secsPerQ) {
+connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ) {
     console.log("Received game data");
 
     secondsPerQuestion = secsPerQ - 1; // Substract a second so late answers aren't lost due to latency
+    secondsBetweenQuestions = secsBetweenQ - 1;
     questionCount = qCount;
 })
 
@@ -75,7 +79,15 @@ connection.on("ReceiveQuestionResults", function (playerResults, correctAnswer) 
         btnWrong.addClass("btn-danger");
     }
 
-    progressBarTransition(1, 100);
+    if (currentQuestionIndex != totalQuestions)
+        progressBarTransition(secondsBetweenQuestions, 100);
+    else
+        progressBarTransition(1, 1);
+
+    // Disable buttons
+    for (i = 0; i < 4; i++) {
+        $("#answer" + i).attr("disabled", true);
+    }
 
     sortScoreboard();
 });
@@ -131,16 +143,44 @@ connection.on("ReceiveQuestion", function (question, qIndex, qCount, elapsed) {
     }
 
     myAnswer = -1;
+    currentQuestionIndex = qIndex;
+    totalQuestions = qCount;
 
     let transitionSecs = secondsPerQuestion - elapsed;
-    console.log("Elapsed: " + elapsed + ", transitionsSecs: " + transitionSecs);
     progressBarTransition(transitionSecs, 0);
     $(".questionCounter").html("Question " + qIndex + "/" + qCount);
 
-    console.log("hi");
+    $(".playing").show();
+    $(".end").hide();
+
     $('.scoreboardEntry').removeClass("bgAnswer bgCorrect bgWrong");
     $('#scoreUpdates').hide();
     $('.answerCaption').empty();
+})
+
+connection.on("ReceiveGameStart", function () {
+
+})
+
+connection.on("ReceiveGameEnd", function (secsUntilNext, playerResults) {
+    progressBarTransition(secsUntilNext - 1, 100);
+
+    playerResults.sort(function (a, b) {
+        return a.scoreThisQuestion > b.scoreThisQuestion ? -1 : 1;
+    });
+
+    $(".end").empty();
+
+    playerResults.forEach((player, i) => {
+        let h = i + 1;
+        if (h > 4)
+            h = 4;
+
+        $(".end").append('<h' + h + '><span class="endEntry">' + player.name + '</span></h' + h + '>');
+    });
+
+    $(".playing").hide();
+    $(".end").show();
 })
 
 $('#chatboxInput').keypress(function (e) {

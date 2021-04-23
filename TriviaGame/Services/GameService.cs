@@ -64,7 +64,7 @@ namespace TriviaGame.Services
             }
 
             // Start next game
-            GenerateNextQuestion();
+            SendNextQuestion();
             questionTimer.Start();
         }
 
@@ -74,7 +74,7 @@ namespace TriviaGame.Services
             {
                 gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name, player.score);
             }
-            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion);
+            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion, gameSettings.SecondsBetweenQuestions);
             gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex, gameSettings.QuestionsPerGame, questionStopwatch.Elapsed.Seconds);
             players.TryAdd(playerConnectionId, new PlayerData(name));
             gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name, 0);
@@ -152,16 +152,18 @@ namespace TriviaGame.Services
 
         private void OnResultsTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            if (currentQuestionIndex < questions.Count)
+            if (currentQuestionIndex >= questions.Count)
+            {
+                gameHub.Clients.All.SendAsync("ReceiveChatMessage", "Game", "Match is over");
+                gameHub.Clients.All.SendAsync("ReceiveGameEnd", gameSettings.SecondsBetweenMatches, players.Values.ToArray());
+                System.Threading.Thread.Sleep(gameSettings.SecondsBetweenMatches * 1000);
+                InitGame();
+            }
+            else
             {
                 ResetPlayerAnswers();
                 SendNextQuestion();
                 questionTimer.Start();
-            }
-            else
-            {
-                gameHub.Clients.All.SendAsync("ReceiveChatMessage", "Game", "Match is over");
-                // TODO: restart game after end screen
             }
         }
 

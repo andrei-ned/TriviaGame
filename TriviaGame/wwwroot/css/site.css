@@ -110,7 +110,7 @@ textarea {
     font-size: 1.5em;
 }
 
-.scoreboardEntry {
+.scoreboardEntry, .endEntry {
     border-radius: 5px;
     padding-right: 5px;
     padding-left: 5px;
@@ -176,3 +176,20 @@ textarea {
 .answerCaption {
     font-size: .4em;
 }
+
+.end {
+    margin-top: 15px;
+}
+
+h1 .endEntry {
+    background: #ffd700;
+}
+
+h2 .endEntry {
+    background: #c0c0c0;
+}
+
+h3 .endEntry {
+    background: #cd7f32;
+}
+
