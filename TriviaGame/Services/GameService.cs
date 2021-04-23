@@ -98,7 +98,11 @@ namespace TriviaGame.Services
                 return;
             }
 
-            if (!isGameRunning)
+            if (isGameRunning)
+            {
+                EndQuestionIfAllPlayersAnswered();
+            }
+            else
             {
                 StartGameIfAllPlayersReady();
             }
@@ -129,10 +133,14 @@ namespace TriviaGame.Services
             player.scoreThisQuestion = answerId == correctAnswer ? CalculateAnswerScore() : 0;
             player.score += player.scoreThisQuestion;
 
-            // End question if everyone answered
+            EndQuestionIfAllPlayersAnswered();
+        }
+
+        private void EndQuestionIfAllPlayersAnswered()
+        {
             if (!questionTimer.Enabled)
                 return;
-            foreach(var p in players.Values)
+            foreach (var p in players.Values)
             {
                 if (p.answerId == -1)
                 {
