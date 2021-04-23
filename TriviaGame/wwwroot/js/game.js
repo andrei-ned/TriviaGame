@@ -11,13 +11,10 @@ var myAnswer = -1;
 var readyStatus = false;
 
 connection.start().then(function () {
-    console.log("Connection started.");
     connection.invoke("InitUser", username);
 });
 
 connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ, players, isGameRunning) {
-    console.log("Received game data");
-
     secondsPerQuestion = secsPerQ - 1; // Substract a second so late answers aren't lost due to latency
     secondsBetweenQuestions = secsBetweenQ - 1;
 
@@ -33,8 +30,6 @@ connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ, players, isGa
 })
 
 connection.on("ReceiveChatMessage", function (name, message) {
-    console.log("Received message: " + message + " from " + name);
-
     var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     var encodedMsg = "<strong>" + name + ":</strong> " + msg;
     var msgElement = document.createElement("p");
@@ -45,7 +40,6 @@ connection.on("ReceiveChatMessage", function (name, message) {
     if (chatboxMessages.scrollHeight - chatboxMessages.offsetHeight < chatboxMessages.scrollTop + 5) {
         shouldScroll = true;
     }
-    console.log(chatboxMessages.scrollHeight - chatboxMessages.offsetHeight);
     chatboxMessages.appendChild(msgElement);
     if (shouldScroll) {
         msgElement.scrollIntoView(false);
@@ -53,9 +47,6 @@ connection.on("ReceiveChatMessage", function (name, message) {
 });
 
 connection.on("ReceiveQuestionResults", function (players, correctAnswer) {
-    console.log("Received question results (correct answer: " + correctAnswer + "):");
-    console.log(players);
-
     var scoreUpdatesElem = $('#scoreUpdates');
     scoreUpdatesElem.show();
     scoreUpdatesElem.empty();
@@ -101,16 +92,19 @@ connection.on("ReceiveQuestionResults", function (players, correctAnswer) {
 });
 
 connection.on("ReceivePlayerAnswered", function (playerId) {
-    console.log("Received: " + playerId + " gave an answer");
     $("." + playerId).addClass("bgAnswer");
 });
 
 connection.on("ReceiveNewPlayer", function (player) {
-    console.log("Received new player:");
-    console.log(player);
     addPlayer(player);
     updatePlayerScore(player.id, player.score);
 });
+
+connection.on("UpdateScores", function (players) {
+    players.forEach((player) => {
+        updatePlayerScore(player.id, player.score);
+    });
+})
 
 function updatePlayerScore(user, score) {
     $("." + user + " .score").html(score);
@@ -132,16 +126,11 @@ function addPlayer(player) {
 }
 
 connection.on("ReceivePlayerDisconnect", function (playerId) {
-    console.log("Player disconnect: " + playerId);
-
     $("." + playerId).remove();
     sortScoreboard();
 });
 
 connection.on("ReceiveQuestion", function (question, qIndex, qCount, elapsed) {
-    console.log("Received question " + qIndex + ":");
-    console.log(question);
-
     $("#question").html(question.question);
     for (i = 0; i < question.answers.length; i++) {
         var btn = $("#answer" + i);
@@ -201,14 +190,10 @@ $('#chatboxInput').keypress(function (e) {
         return console.error(err.toString());
     });
 
-    console.log("Sent message: " + message);
-
     $('#chatboxInput').val('');
 });
 
 function submitAnswer(answerId) {
-    console.log("Submitted answer " + answerId);
-
     connection.invoke("SendQuestionAnswer", answerId).catch(function (err) {
         return console.error(err.toString());
     });
@@ -259,7 +244,6 @@ function ready() {
 }
 
 connection.on("ReceivePlayerReady", function (playerId, isReady) {
-    console.log("Received: " + playerId + (isReady ? "is ready" : "is not ready"));
     readyPlayer(playerId, isReady);
 })
 

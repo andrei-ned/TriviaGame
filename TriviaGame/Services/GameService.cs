@@ -65,6 +65,8 @@ namespace TriviaGame.Services
                 player.scoreThisQuestion = 0;
             }
 
+            gameHub.Clients.All.SendAsync("UpdateScores", players.Values.ToArray());
+
             // Start next game
             SendNextQuestion();
             questionTimer.Start();
@@ -72,6 +74,9 @@ namespace TriviaGame.Services
 
         public void AddPlayer(string playerConnectionId, string name)
         {
+            if (players.TryGetValue(playerConnectionId, out _))
+                return;
+
             foreach (var player in players.Values)
             {
                 gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player);
