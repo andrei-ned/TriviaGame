@@ -26,6 +26,7 @@ namespace TriviaGame.Services
         private List<Question> questions;
         private int currentQuestionIndex;
         private int correctAnswer;
+        GameQuestion gameQuestion;
 
         public GameService(IHubContext<GameHub> gameHub, QuestionService questionService, IGameSettings gameSettings)
         {
@@ -63,7 +64,7 @@ namespace TriviaGame.Services
             }
 
             // Start next game
-            SendNextQuestion();
+            GenerateNextQuestion();
             questionTimer.Start();
         }
 
@@ -73,7 +74,8 @@ namespace TriviaGame.Services
             {
                 gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name, player.score);
             }
-            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion, gameSettings.SecondsBetweenQuestions);
+            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion);
+            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex, gameSettings.QuestionsPerGame, questionStopwatch.Elapsed.Seconds);
             players.TryAdd(playerConnectionId, new PlayerData(name));
             gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name, 0);
         }
@@ -95,6 +97,19 @@ namespace TriviaGame.Services
             player.answerId = answerId;
             player.scoreThisQuestion = answerId == correctAnswer ? CalculateAnswerScore() : 0;
             player.score += player.scoreThisQuestion;
+
+            // End question if everyone answered
+            if (!questionTimer.Enabled)
+                return;
+            foreach(var p in players.Values)
+            {
+                if (p.answerId == -1)
+                {
+                    return;
+                }
+            }
+            questionTimer.Stop();
+            OnQuestonTimerElapsed(null, null);
         }
 
         private int CalculateAnswerScore()
@@ -104,14 +119,19 @@ namespace TriviaGame.Services
             return Convert.ToInt32(score);
         }
 
-        private void SendNextQuestion()
+        private void GenerateNextQuestion()
         {
             questionStopwatch.Restart();
-            GameQuestion gameQuestion = new GameQuestion(questions[currentQuestionIndex]);
+            gameQuestion = new GameQuestion(questions[currentQuestionIndex]);
             correctAnswer = gameQuestion.answers.FindIndex(x => x == questions[currentQuestionIndex].correctAnswers[0]);
             currentQuestionIndex++;
+        }
 
-            gameHub.Clients.All.SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex);
+        private void SendNextQuestion()
+        {
+            GenerateNextQuestion();
+
+            gameHub.Clients.All.SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex, gameSettings.QuestionsPerGame, questionStopwatch.Elapsed.Seconds);
         }
 
         private void ResetPlayerAnswers()

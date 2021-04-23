@@ -89,6 +89,12 @@ textarea {
     width: 100%;
 }
 
+.centerAbsolute {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
 /* Game
 ------------------------------------------------- */
 
@@ -104,6 +110,26 @@ textarea {
     font-size: 1.5em;
 }
 
+.scoreboardEntry {
+    border-radius: 5px;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin-top: 2.5px;
+    margin-bottom: 2.5px;
+}
+
+.bgAnswer {
+    background: #52beff;
+}
+
+.bgCorrect {
+    background: #74c687;
+}
+
+.bgWrong {
+    background: #e87c87;
+}
+
 #gameboard {
     font-size: 2em;
 }
@@ -117,10 +143,8 @@ textarea {
     background-color: #e9ecef;
     padding-right: 5px;
     padding-left: 5px;
-    border-color: #5aaaff;
-    border-width: 5px;
-    border-style: solid;
-    border-radius: 20px;
+    border: 3px solid #5aaaff;
+    border-radius: 5px;
 }
 
 #chatboxInput {
@@ -147,4 +171,8 @@ textarea {
 #scoreUpdates p {
     margin-bottom: 0;
     font-size: 0.75em;
+}
+
+.answerCaption {
+    font-size: .4em;
 }

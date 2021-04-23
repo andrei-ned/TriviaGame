@@ -3,16 +3,21 @@
 }
 
 <div class="row gameContainer">
-    <div class="col-3 h-100" id="scoreboard"></div>
-    <div class="col-6 text-center h-100 overflow-auto text-break" id="gameboard">
+    <div class="col-3 h-100 overflow-auto" id="scoreboard"></div>
+    <div class="col-6 text-center h-100 text-break" id="gameboard">
         <div class="progress">
-            <div class="progress-bar active" role="progressbar" style="width: 100%" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar active" role="progressbar" style="width: 100%; transition: width 100s linear " aria-valuemin="0" aria-valuemax="100"></div>
+            <small class="centerAbsolute questionCounter">Question ?/?</small>
         </div>
         <div id="question">Question?</div>
         <button id="answer0" class="col btn btn-outline-primary" onclick="submitAnswer(0)">A</button>
+        <div class="answerCaption ac0">pleb1, pleb2, pleb3</div>
         <button id="answer1" class="col btn btn-outline-primary" onclick="submitAnswer(1)">B</button>
+        <div class="answerCaption ac1">pleb1, pleb2, pleb3</div>
         <button id="answer2" class="col btn btn-outline-primary" onclick="submitAnswer(2)">C</button>
+        <div class="answerCaption ac2">pleb1, pleb2, pleb3</div>
         <button id="answer3" class="col btn btn-outline-primary" onclick="submitAnswer(3)">D</button>
+        <div class="answerCaption ac3">pleb1, pleb2, pleb3</div>
         <div id="scoreUpdates"></div>
     </div>
     <div class="col-3 h-100" id="chatbox">

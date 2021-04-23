@@ -2,12 +2,8 @@
 var wsUri = protocol + "//" + window.location.host + "/gamehub";
 var connection = new signalR.HubConnectionBuilder().withUrl("/gamehub").build();
 
-const GameState = Object.freeze({ "question": 1, "postQuestion": 2, "gameEnd": 3 })
-var gameState;
-
 var secondsPerQuestion;
-var secondsBetweenQuestions;
-var timeAtQuestionStart;
+
 var myAnswer = -1;
 
 addPlayer(username);
@@ -17,13 +13,11 @@ connection.start().then(function () {
     connection.invoke("InitUser", username);
 });
 
-connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ) {
+connection.on("ReceiveGameData", function (secsPerQ) {
+    console.log("Received game data");
+
     secondsPerQuestion = secsPerQ - 1; // Substract a second so late answers aren't lost due to latency
-    secondsBetweenQuestions = secsBetweenQ;
-
-    console.log("Received game data: " + secondsPerQuestion);
-
-    setInterval(updateProgressbar, 10)
+    questionCount = qCount;
 })
 
 connection.on("ReceiveChatMessage", function (user, message) {
@@ -62,7 +56,10 @@ connection.on("ReceiveQuestionResults", function (playerResults, correctAnswer) 
         // Update scoreboard
         updatePlayerScore(player.name, player.score);
         // Show picked answer
-        // ...TODO
+        $(".ac" + player.answerId).append(player.name + " ");
+        // Change bg in scoreboard
+        if (player.answerId != -1)
+            $("." + player.name).addClass(player.answerId == correctAnswer ? "bgCorrect" : "bgWrong");
         // Show points earned this round
         scoreUpdatesElem.append("<p>" + player.name + " +" + player.scoreThisQuestion + "</p>");
     });
@@ -71,19 +68,21 @@ connection.on("ReceiveQuestionResults", function (playerResults, correctAnswer) 
     var btnCorrect = $("#answer" + correctAnswer);
     btnCorrect.removeClass("btn-outline-primary btn-primary");
     btnCorrect.addClass("btn-success");
-    console.log(myAnswer);
-    console.log(correctAnswer);
+
     if (myAnswer != correctAnswer) {
         var btnWrong = $("#answer" + myAnswer);
         btnWrong.removeClass("btn-outline-primary btn-primary");
         btnWrong.addClass("btn-danger");
     }
 
+    progressBarTransition(1, 100);
+
     sortScoreboard();
 });
 
 connection.on("ReceivePlayerAnswered", function (user) {
     console.log("Received: " + user + " gave an answer");
+    $("." + user).addClass("bgAnswer");
 });
 
 connection.on("ReceiveNewPlayer", function (user, score) {
@@ -98,7 +97,7 @@ function updatePlayerScore(user, score) {
 
 function addPlayer(user) {
     var playerElement = document.createElement("div");
-    playerElement.setAttribute("class", user);
+    playerElement.setAttribute("class", user + " scoreboardEntry");
     var playerName = document.createElement("span");
     playerName.innerHTML = user;
     var playerScore = document.createElement("span");
@@ -118,7 +117,7 @@ connection.on("ReceivePlayerDisconnect", function (user) {
     sortScoreboard();
 });
 
-connection.on("ReceiveQuestion", function (question, qIndex) {
+connection.on("ReceiveQuestion", function (question, qIndex, qCount, elapsed) {
     console.log("Received question " + qIndex + ":");
     console.log(question);
 
@@ -132,10 +131,16 @@ connection.on("ReceiveQuestion", function (question, qIndex) {
     }
 
     myAnswer = -1;
-    gameState = GameState.question;
-    timeAtQuestionStart = Date.now();
 
+    let transitionSecs = secondsPerQuestion - elapsed;
+    console.log("Elapsed: " + elapsed + ", transitionsSecs: " + transitionSecs);
+    progressBarTransition(transitionSecs, 0);
+    $(".questionCounter").html("Question " + qIndex + "/" + qCount);
+
+    console.log("hi");
+    $('.scoreboardEntry').removeClass("bgAnswer bgCorrect bgWrong");
     $('#scoreUpdates').hide();
+    $('.answerCaption').empty();
 })
 
 $('#chatboxInput').keypress(function (e) {
@@ -191,14 +196,7 @@ function sortScoreboard() {
     $('#scoreboard').append(children);
 }
 
-function updateProgressbar() {
-    switch (gameState) {
-        case GameState.question:
-            let x = (Date.now() - timeAtQuestionStart);
-            x = (1 - x / (secondsPerQuestion * 1000)) * 100;
-
-            $('.progress-bar').attr("style", "width: " + x + "%");
-            $('.progress-bar').attr("aria-valuenow", x);
-            break;
-    }
+function progressBarTransition(secs, width) {
+    $(".progress-bar").css("transition", "width " + secs + "s linear");
+    $(".progress-bar").css("width", width + "%");
 }
