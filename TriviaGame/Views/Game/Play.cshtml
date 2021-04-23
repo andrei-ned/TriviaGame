@@ -9,6 +9,9 @@
             <div class="progress-bar active" role="progressbar" style="width: 100%; transition: width 100s linear " aria-valuemin="0" aria-valuemax="100"></div>
             <small class="centerAbsolute questionCounter"></small>
         </div>
+        <div class="start" style="display: none;">
+            <button class="btn-ready btn btn-outline-primary" onclick="ready()">Ready</button>
+        </div>
         <div class="playing" style="display: none;">
             <div id="question">Question?</div>
             <button id="answer0" class="col btn btn-outline-primary" onclick="submitAnswer(0)">A</button>

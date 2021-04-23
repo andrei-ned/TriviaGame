@@ -8,6 +8,7 @@ var currentQuestionIndex;
 var totalQuestions;
 
 var myAnswer = -1;
+var readyStatus = false;
 
 addPlayer(username);
 
@@ -16,12 +17,21 @@ connection.start().then(function () {
     connection.invoke("InitUser", username);
 });
 
-connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ) {
+connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ, players, isGameRunning) {
     console.log("Received game data");
 
     secondsPerQuestion = secsPerQ - 1; // Substract a second so late answers aren't lost due to latency
     secondsBetweenQuestions = secsBetweenQ - 1;
-    questionCount = qCount;
+
+    if (!isGameRunning) {
+        $(".playing").hide();
+        $(".end").hide();
+        $(".start").show();
+
+        players.forEach((player) => {
+            readyPlayer(player.name, player.isReady);
+        });
+    }
 })
 
 connection.on("ReceiveChatMessage", function (user, message) {
@@ -152,6 +162,7 @@ connection.on("ReceiveQuestion", function (question, qIndex, qCount, elapsed) {
 
     $(".playing").show();
     $(".end").hide();
+    $(".start").hide();
 
     $('.scoreboardEntry').removeClass("bgAnswer bgCorrect bgWrong");
     $('#scoreUpdates').hide();
@@ -181,6 +192,7 @@ connection.on("ReceiveGameEnd", function (secsUntilNext, playerResults) {
 
     $(".playing").hide();
     $(".end").show();
+    $(".start").hide();
 })
 
 $('#chatboxInput').keypress(function (e) {
@@ -239,4 +251,26 @@ function sortScoreboard() {
 function progressBarTransition(secs, width) {
     $(".progress-bar").css("transition", "width " + secs + "s linear");
     $(".progress-bar").css("width", width + "%");
+}
+
+function ready() {
+    readyStatus = !readyStatus;
+
+    $(".btn-ready").html(readyStatus ? "Unready" : "Ready");
+
+    connection.invoke("SendReady", readyStatus).catch(function (err) {
+        return console.error(err.toString());
+    });
+}
+
+connection.on("ReceivePlayerReady", function (user, isReady) {
+    console.log("Received: " + user + (isReady ? "is ready" : "is not ready"));
+    readyPlayer(user, isReady);
+})
+
+function readyPlayer(user, isReady) {
+    if (isReady)
+        $("." + user).addClass("bgAnswer");
+    else
+        $("." + user).removeClass("bgAnswer");
 }

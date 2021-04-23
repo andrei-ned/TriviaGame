@@ -31,6 +31,11 @@ namespace TriviaGame.Hubs
             gameService.AddPlayer(Context.ConnectionId, user);
         }
 
+        public void SendReady(bool isReady)
+        {
+            gameService.ReadyPlayer(Context.ConnectionId, isReady);
+        }
+
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             gameService.RemovePlayer(Context.ConnectionId);

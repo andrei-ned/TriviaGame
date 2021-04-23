@@ -28,6 +28,8 @@ namespace TriviaGame.Services
         private int correctAnswer;
         GameQuestion gameQuestion;
 
+        bool isGameRunning = false;
+
         public GameService(IHubContext<GameHub> gameHub, QuestionService questionService, IGameSettings gameSettings)
         {
             this.gameHub = gameHub;
@@ -45,12 +47,12 @@ namespace TriviaGame.Services
             questionResultsTimer.AutoReset = false;
 
             questionStopwatch = new Stopwatch();
-
-            InitGame();
         }
 
         private void InitGame()
         {
+            isGameRunning = true;
+
             // Generate new questions
             currentQuestionIndex = 0;
             questions = questionService.GetRandom(gameSettings.QuestionsPerGame);
@@ -74,8 +76,9 @@ namespace TriviaGame.Services
             {
                 gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name, player.score);
             }
-            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion, gameSettings.SecondsBetweenQuestions);
-            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex, gameSettings.QuestionsPerGame, questionStopwatch.Elapsed.Seconds);
+            gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion, gameSettings.SecondsBetweenQuestions, players.Values.ToArray(), isGameRunning);
+            if (isGameRunning)
+                gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex, gameSettings.QuestionsPerGame, questionStopwatch.Elapsed.Seconds);
             players.TryAdd(playerConnectionId, new PlayerData(name));
             gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name, 0);
         }
@@ -84,15 +87,42 @@ namespace TriviaGame.Services
         {
             gameHub.Clients.All.SendAsync("ReceivePlayerDisconnect", players[playerConnectionId].name);
             players.TryRemove(playerConnectionId, out _);
+
+            // No players connected, end the game
+            if (players.Count == 0)
+            {
+                isGameRunning = false;
+                questionTimer.Stop();
+                questionResultsTimer.Stop();
+                return;
+            }
+
+            if (!isGameRunning)
+            {
+                StartGameIfAllPlayersReady();
+            }
+        }
+
+        public void ReadyPlayer(string playerConnectionId, bool isReady)
+        {
+            PlayerData player;
+            if (!players.TryGetValue(playerConnectionId, out player))
+                return;
+
+            player.isReady = isReady;
+
+            gameHub.Clients.All.SendAsync("ReceivePlayerReady", player.name, player.isReady);
+
+            StartGameIfAllPlayersReady();
         }
 
         public void PlayerAnswer(string playerConnectionId, int answerId)
         {
-            gameHub.Clients.All.SendAsync("ReceivePlayerAnswered", players[playerConnectionId].name);
-
             PlayerData player;
             if (!players.TryGetValue(playerConnectionId, out player))
                 return;
+
+            gameHub.Clients.All.SendAsync("ReceivePlayerAnswered", player.name);
 
             player.answerId = answerId;
             player.scoreThisQuestion = answerId == correctAnswer ? CalculateAnswerScore() : 0;
@@ -110,6 +140,17 @@ namespace TriviaGame.Services
             }
             questionTimer.Stop();
             OnQuestonTimerElapsed(null, null);
+        }
+
+        private void StartGameIfAllPlayersReady()
+        {
+            foreach (var p in players.Values)
+            {
+                if (!p.isReady)
+                    return;
+            }
+
+            InitGame();
         }
 
         private int CalculateAnswerScore()
@@ -181,6 +222,7 @@ namespace TriviaGame.Services
             public int score { get; set; }
             public int answerId { get; set; }
             public int scoreThisQuestion { get; set; }
+            public bool isReady { get; set; }
         }
 
         class GameQuestion
