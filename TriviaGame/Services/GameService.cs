@@ -74,18 +74,19 @@ namespace TriviaGame.Services
         {
             foreach (var player in players.Values)
             {
-                gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player.name, player.score);
+                gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveNewPlayer", player);
             }
             gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveGameData", gameSettings.SecondsPerQuestion, gameSettings.SecondsBetweenQuestions, players.Values.ToArray(), isGameRunning);
             if (isGameRunning)
                 gameHub.Clients.Client(playerConnectionId).SendAsync("ReceiveQuestion", gameQuestion, currentQuestionIndex, gameSettings.QuestionsPerGame, questionStopwatch.Elapsed.Seconds);
-            players.TryAdd(playerConnectionId, new PlayerData(name));
-            gameHub.Clients.AllExcept(playerConnectionId).SendAsync("ReceiveNewPlayer", name, 0);
+            var newPlayer = new PlayerData(name);
+            players.TryAdd(playerConnectionId, newPlayer);
+            gameHub.Clients.All.SendAsync("ReceiveNewPlayer", newPlayer);
         }
 
         public void RemovePlayer(string playerConnectionId)
         {
-            gameHub.Clients.All.SendAsync("ReceivePlayerDisconnect", players[playerConnectionId].name);
+            gameHub.Clients.All.SendAsync("ReceivePlayerDisconnect", players[playerConnectionId].id);
             players.TryRemove(playerConnectionId, out _);
 
             // No players connected, end the game
@@ -111,7 +112,7 @@ namespace TriviaGame.Services
 
             player.isReady = isReady;
 
-            gameHub.Clients.All.SendAsync("ReceivePlayerReady", player.name, player.isReady);
+            gameHub.Clients.All.SendAsync("ReceivePlayerReady", player.id, player.isReady);
 
             StartGameIfAllPlayersReady();
         }
@@ -122,7 +123,7 @@ namespace TriviaGame.Services
             if (!players.TryGetValue(playerConnectionId, out player))
                 return;
 
-            gameHub.Clients.All.SendAsync("ReceivePlayerAnswered", player.name);
+            gameHub.Clients.All.SendAsync("ReceivePlayerAnswered", player.id);
 
             player.answerId = answerId;
             player.scoreThisQuestion = answerId == correctAnswer ? CalculateAnswerScore() : 0;
@@ -216,8 +217,10 @@ namespace TriviaGame.Services
                 score = 0;
                 answerId = -1;
                 scoreThisQuestion = 0;
+                id = Guid.NewGuid().ToString();
             }
 
+            public string id { get; set; }
             public string name { get; set; }
             public int score { get; set; }
             public int answerId { get; set; }

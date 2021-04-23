@@ -10,8 +10,6 @@ var totalQuestions;
 var myAnswer = -1;
 var readyStatus = false;
 
-addPlayer(username);
-
 connection.start().then(function () {
     console.log("Connection started.");
     connection.invoke("InitUser", username);
@@ -29,16 +27,16 @@ connection.on("ReceiveGameData", function (secsPerQ, secsBetweenQ, players, isGa
         $(".start").show();
 
         players.forEach((player) => {
-            readyPlayer(player.name, player.isReady);
+            readyPlayer(player.id, player.isReady);
         });
     }
 })
 
-connection.on("ReceiveChatMessage", function (user, message) {
-    console.log("Received message: " + message + " from " + user);
+connection.on("ReceiveChatMessage", function (name, message) {
+    console.log("Received message: " + message + " from " + name);
 
     var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    var encodedMsg = "<strong>" + user + ":</strong> " + msg;
+    var encodedMsg = "<strong>" + name + ":</strong> " + msg;
     var msgElement = document.createElement("p");
     msgElement.innerHTML = encodedMsg;
     msgElement.setAttribute("class", "text-break m-0");
@@ -54,26 +52,26 @@ connection.on("ReceiveChatMessage", function (user, message) {
     }
 });
 
-connection.on("ReceiveQuestionResults", function (playerResults, correctAnswer) {
+connection.on("ReceiveQuestionResults", function (players, correctAnswer) {
     console.log("Received question results (correct answer: " + correctAnswer + "):");
-    console.log(playerResults);
+    console.log(players);
 
     var scoreUpdatesElem = $('#scoreUpdates');
     scoreUpdatesElem.show();
     scoreUpdatesElem.empty();
 
-    playerResults.sort(function (a, b) {
+    players.sort(function (a, b) {
         return a.scoreThisQuestion > b.scoreThisQuestion ? -1 : 1;
     });
 
-    playerResults.forEach((player) => {
+    players.forEach((player) => {
         // Update scoreboard
-        updatePlayerScore(player.name, player.score);
+        updatePlayerScore(player.id, player.score);
         // Show picked answer
         $(".ac" + player.answerId).append(player.name + " ");
         // Change bg in scoreboard
         if (player.answerId != -1)
-            $("." + player.name).addClass(player.answerId == correctAnswer ? "bgCorrect" : "bgWrong");
+            $("." + player.id).addClass(player.answerId == correctAnswer ? "bgCorrect" : "bgWrong");
         // Show points earned this round
         scoreUpdatesElem.append("<p>" + player.name + " +" + player.scoreThisQuestion + "</p>");
     });
@@ -102,26 +100,27 @@ connection.on("ReceiveQuestionResults", function (playerResults, correctAnswer) 
     sortScoreboard();
 });
 
-connection.on("ReceivePlayerAnswered", function (user) {
-    console.log("Received: " + user + " gave an answer");
-    $("." + user).addClass("bgAnswer");
+connection.on("ReceivePlayerAnswered", function (playerId) {
+    console.log("Received: " + playerId + " gave an answer");
+    $("." + playerId).addClass("bgAnswer");
 });
 
-connection.on("ReceiveNewPlayer", function (user, score) {
-    console.log("Received new player: " + user);
-    addPlayer(user);
-    updatePlayerScore(user, score);
+connection.on("ReceiveNewPlayer", function (player) {
+    console.log("Received new player:");
+    console.log(player);
+    addPlayer(player);
+    updatePlayerScore(player.id, player.score);
 });
 
 function updatePlayerScore(user, score) {
     $("." + user + " .score").html(score);
 }
 
-function addPlayer(user) {
+function addPlayer(player) {
     var playerElement = document.createElement("div");
-    playerElement.setAttribute("class", user + " scoreboardEntry");
+    playerElement.setAttribute("class", player.id + " scoreboardEntry");
     var playerName = document.createElement("span");
-    playerName.innerHTML = user;
+    playerName.innerHTML = player.name;
     var playerScore = document.createElement("span");
     playerScore.innerHTML = "0";
     playerScore.setAttribute("class", "float-right score");
@@ -132,10 +131,10 @@ function addPlayer(user) {
     $('#scoreboard').append(playerElement);
 }
 
-connection.on("ReceivePlayerDisconnect", function (user) {
-    console.log("Player disconnect: " + user);
+connection.on("ReceivePlayerDisconnect", function (playerId) {
+    console.log("Player disconnect: " + playerId);
 
-    $("." + user).remove();
+    $("." + playerId).remove();
     sortScoreboard();
 });
 
@@ -169,20 +168,16 @@ connection.on("ReceiveQuestion", function (question, qIndex, qCount, elapsed) {
     $('.answerCaption').empty();
 })
 
-connection.on("ReceiveGameStart", function () {
-
-})
-
-connection.on("ReceiveGameEnd", function (secsUntilNext, playerResults) {
+connection.on("ReceiveGameEnd", function (secsUntilNext, players) {
     progressBarTransition(secsUntilNext - 1, 100);
 
-    playerResults.sort(function (a, b) {
+    players.sort(function (a, b) {
         return a.scoreThisQuestion > b.scoreThisQuestion ? -1 : 1;
     });
 
     $(".end").empty();
 
-    playerResults.forEach((player, i) => {
+    players.forEach((player, i) => {
         let h = i + 1;
         if (h > 4)
             h = 4;
@@ -263,14 +258,14 @@ function ready() {
     });
 }
 
-connection.on("ReceivePlayerReady", function (user, isReady) {
-    console.log("Received: " + user + (isReady ? "is ready" : "is not ready"));
-    readyPlayer(user, isReady);
+connection.on("ReceivePlayerReady", function (playerId, isReady) {
+    console.log("Received: " + playerId + (isReady ? "is ready" : "is not ready"));
+    readyPlayer(playerId, isReady);
 })
 
-function readyPlayer(user, isReady) {
+function readyPlayer(playerId, isReady) {
     if (isReady)
-        $("." + user).addClass("bgAnswer");
+        $("." + playerId).addClass("bgAnswer");
     else
-        $("." + user).removeClass("bgAnswer");
+        $("." + playerId).removeClass("bgAnswer");
 }
